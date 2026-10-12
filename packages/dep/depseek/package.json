@@ -33,7 +33,7 @@
     "build:dts": "yarn build:tsc",
     "build:docs": "yarn build:typedoc",
     "test": "concurrently 'npm:test:*'",
-    "test:lint": "OXLINTRC=src/test/lint/.oxlintrc.json yarn test:oxlint",
+    "test:lint": "OXLINTRC=.oxlintrc.json yarn test:oxlint",
     "test:unit": "yarn test:c8",
     "test:it": "yarn run:void",
     "publish:draft": "yarn build && npm publish --no-git-tag-version --tag draft"
@@ -54,7 +54,7 @@
   "homepage": "https://github.com/idleware/misc/tree/master/packages/dep/depseek",
   "devDependencies": {
     "@antongolub/infra": "workspace:*",
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.6.5",
     "benchmark": "^2.1.4",
     "deps-regex": "^0.2.0",
     "esprima": "^4.0.1"

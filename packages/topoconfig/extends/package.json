@@ -62,8 +62,8 @@
     "@antongolub/infra": "workspace:*",
     "@fixtures/config-shared": "workspace:*",
     "@fixtures/config-with-extends": "workspace:*",
-    "@types/node": "^25.6.0",
+    "@types/node": "^26.6.5",
     "cosmiconfig": "^9.0.1",
-    "js-yaml": "^4.1.1"
+    "js-yaml": "^5.4.3"
   }
 }

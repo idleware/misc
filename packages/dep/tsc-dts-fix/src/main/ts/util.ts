@@ -6,9 +6,10 @@ export const camelizeRecord = (flags: Record<string, any>) =>
     v
   ])))
 
+const dirname = (f: string) => f.endsWith('/') ? f : path.dirname(f) + '/'
+
 export const findBase = (files: string[]) => {
   const first = files[0]
-  const dirname = (f: string) => f.endsWith('/') ? f : path.dirname(f) + '/'
 
   if (files.length === 0) return ''
   if (files.length === 1) return dirname(first)
