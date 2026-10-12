@@ -13,7 +13,7 @@ on:
 permissions: {}
 
 env:
-  ZBR: zx-bulk-release@3.3.0 # one version for every phase, keep in sync with yarn.lock
+  ZBR: zx-bulk-release@4.0.0 # one version for every phase, keep in sync with yarn.lock
 
 jobs:
   receive:
