@@ -1,5 +1,8 @@
-# This is a Github Workflow that runs tests on any push or pull request.
-# If the tests pass and this is a push to the master branch it also runs Semantic Release.
+# Push: four-phase zx-bulk-release flow.
+#   receive — trusted, runs before deps install: consumes rebuild signals, resolves versions, emits the context
+#   pack    — untrusted: installs deps, builds, tests and packs parcels; holds no write token and no OIDC
+#   deliver — trusted, clean runner: verifies parcels against the context, delivers them, pushes coverage
+# PR: build, test and compat checks only.
 name: CI
 on:
   push:
@@ -9,27 +12,31 @@ on:
 
 permissions: {}
 
+env:
+  ZBR: zx-bulk-release@3.3.0 # one version for every phase, keep in sync with yarn.lock
+
 jobs:
-  push:
-    name: Push ${{ github.ref }}
+  receive:
+    name: Receive
     if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     permissions:
-      checks: read
-      statuses: write
-      contents: write
-      packages: write
-      id-token: write
+      contents: write # consume zbr-rebuild.* tags
+    outputs:
+      status: ${{ steps.receive.outputs.status }}
+      context: ${{ steps.receive.outputs.context }}
+      fetch-depth: ${{ steps.depth.outputs.value }}
     steps:
       - name: Fetch depth
+        id: depth
         env:
           COMMITS_JSON: ${{ toJSON(github.event.commits) }}
-        run: echo "FETCH_DEPTH=$(echo "$COMMITS_JSON" | jq 'length | if . < 20 then . + 1 else 0 end')" >> $GITHUB_ENV
+        run: echo "value=$(echo "$COMMITS_JSON" | jq 'length | if . < 20 then . + 1 else 0 end')" >> "$GITHUB_OUTPUT"
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6 # zizmor: ignore[artipacked] zbr deletes rebuild tags via `origin`; no deps are installed in this job
         with:
-          fetch-depth: ${{ env.FETCH_DEPTH }}
+          fetch-depth: ${{ steps.depth.outputs.value }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -37,8 +44,35 @@ jobs:
           node-version: 24
           package-manager-cache: false # explicit opt-out: setup-node v6 auto-enables cache when `packageManager` is set in package.json
 
+      - name: Receive
+        id: receive
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # also puts the gh-release channel into the context
+        run: |
+          npx "$ZBR" --receive
+          echo "context=$(jq -c . zbr-context.json)" >> "$GITHUB_OUTPUT"
+
+  pack:
+    name: Pack
+    needs: receive
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: ${{ needs.receive.outputs.fetch-depth }}
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
       - name: Cache yarn (restore+save)
-        uses: actions/cache@v4 # zizmor: ignore[cache-poisoning] job gated by `if: github.event_name == 'push'`, runs only on trusted master pushes
+        uses: actions/cache@v4 # zizmor: ignore[cache-poisoning] runs only on master and zbr-rebuild pushes (gated by `receive`)
         with:
           path: .yarn/cache
           key: yarn-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
@@ -52,21 +86,6 @@ jobs:
         with:
           deno-version: v1.x
 
-      - name: Receive
-        if: github.ref == 'refs/heads/master'
-        id: receive
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npm_config_yes=true npx zx-bulk-release --receive
-
-      - name: Upload context
-        if: github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v7
-        with:
-          name: context-${{ github.run_id }}
-          path: zbr-context.json
-          retention-days: 1
-
       - name: Fetch deps
         run: yarn --silent --immutable
 
@@ -79,21 +98,28 @@ jobs:
 
       - name: Coverage
         run: yarn cov
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Qlty.sh (codeclimate)
-        uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899 # v2.2.0
+      - name: Save coverage
+        uses: actions/upload-artifact@v7
         with:
-          token: ${{ secrets.QLTY_TOKEN }}
-          files: ${{github.workspace}}/lcov.info
+          name: coverage-${{ github.run_id }}
+          path: |
+            lcov.info
+            lcov-sum.json
+          retention-days: 1
+
+      - name: Restore context
+        if: needs.receive.outputs.status == 'proceed'
+        env:
+          ZBR_CONTEXT: ${{ needs.receive.outputs.context }}
+        run: echo "$ZBR_CONTEXT" > zbr-context.json
 
       - name: Pack
-        if: github.ref == 'refs/heads/master' && steps.receive.outputs.status == 'proceed'
-        run: npx zx-bulk-release --pack --no-build --no-test
+        if: needs.receive.outputs.status == 'proceed'
+        run: npx "$ZBR" --pack --no-build --no-test
 
       - name: Upload parcels
-        if: github.ref == 'refs/heads/master' && steps.receive.outputs.status == 'proceed'
+        if: needs.receive.outputs.status == 'proceed'
         uses: actions/upload-artifact@v7
         with:
           name: parcels-${{ github.run_id }}
@@ -102,13 +128,12 @@ jobs:
 
   deliver:
     name: Deliver
-    needs: push
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: [receive, pack]
     runs-on: ubuntu-24.04
+    environment: release
     permissions:
-      contents: write
-      packages: write
-      id-token: write
+      contents: write # git tags, gh releases, `lcov` release assets
+      id-token: write # npm trusted publishing
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -116,45 +141,77 @@ jobs:
           node-version: 24
           package-manager-cache: false
 
-      - name: Download context
-        uses: actions/download-artifact@v8
-        with:
-          name: context-${{ github.run_id }}
-          path: .
-        id: context
-        continue-on-error: true
+      # Taken from `receive` outputs: unlike run artifacts, a compromised `pack` cannot replace them
+      - name: Restore context
+        env:
+          ZBR_CONTEXT: ${{ needs.receive.outputs.context }}
+        run: echo "$ZBR_CONTEXT" > zbr-context.json
 
       - name: Download parcels
-        if: steps.context.outcome == 'success'
+        if: needs.receive.outputs.status == 'proceed'
         uses: actions/download-artifact@v8
         with:
           name: parcels-${{ github.run_id }}
           path: parcels-unverified
-        id: download
-        continue-on-error: true
 
       - name: Verify
-        if: steps.context.outcome == 'success' && steps.download.outcome == 'success'
-        run: npx zx-bulk-release --verify parcels-unverified/:parcels/
+        if: needs.receive.outputs.status == 'proceed'
+        run: npx "$ZBR" --verify parcels-unverified/:parcels/
 
       - name: Deliver
-        if: steps.context.outcome == 'success' && steps.download.outcome == 'success'
+        if: needs.receive.outputs.status == 'proceed'
         env:
           NPM_OIDC: true
-          GH_USER: ${{ secrets.GH_USER }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GIT_COMMITTER_NAME: ${{ secrets.GIT_COMMITTER_NAME }}
-          GIT_COMMITTER_EMAIL: ${{ secrets.GIT_COMMITTER_EMAIL }}
-        run: npx zx-bulk-release --deliver
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_COMMITTER_NAME: ${{ vars.GIT_COMMITTER_NAME }}
+          GIT_COMMITTER_EMAIL: ${{ vars.GIT_COMMITTER_EMAIL }}
+        run: npx "$ZBR" --deliver
 
       - name: Update delivery status
-        if: steps.context.outcome == 'success' && steps.download.outcome == 'success'
+        if: needs.receive.outputs.status == 'proceed'
         uses: actions/upload-artifact@v7
         with:
           name: parcels-${{ github.run_id }}
           path: parcels
           overwrite: true
           retention-days: 1
+
+      # Coverage goes out on every push, regardless of the delivery outcome
+      - name: Download coverage
+        if: ${{ !cancelled() }}
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-${{ github.run_id }}
+
+      - name: Push coverage
+        if: ${{ !cancelled() }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload lcov lcov.info lcov-sum.json --clobber --repo "$GITHUB_REPOSITORY"
+
+  # Not in deliver: qlty-action runs a CLI downloaded at runtime with the whole job env
+  qlty:
+    name: Qlty
+    needs: pack
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Download coverage
+        uses: actions/download-artifact@v8
+        with:
+          name: coverage-${{ github.run_id }}
+
+      - name: Qlty.sh (codeclimate)
+        uses: qltysh/qlty-action/coverage@a19242102d17e497f437d7466aa01b528537e899 # v2.2.0
+        with:
+          token: ${{ secrets.QLTY_TOKEN }}
+          files: ${{github.workspace}}/lcov.info
 
   pr:
     if: github.event_name == 'pull_request'

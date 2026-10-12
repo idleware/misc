@@ -1,7 +1,7 @@
 ## topoconfig
 > [toposource](https://github.com/semrel-extra/toposource)-enhanced [uniconfig](https://github.com/qiwi/uniconfig) remastered
 
-[![lcov](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fantongolub%2Fmisc%2Freleases%2Fdownload%2Flcov%2Flcov-sum.json&query=%24.scopes.packages_topoconfig_core.max&label=lcov&color=brightgreen)](https://github.com/antongolub/misc/releases/download/lcov/lcov.info)
+[![lcov](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fidleware%2Fmisc%2Freleases%2Fdownload%2Flcov%2Flcov-sum.json&query=%24.scopes.packages_topoconfig_core.max&label=lcov&color=brightgreen)](https://github.com/idleware/misc/releases/download/lcov/lcov.info)
 [![npm (scoped)](https://img.shields.io/npm/v/topoconfig/latest.svg?label=npm&color=white)](https://www.npmjs.com/package/topoconfig)
 
 ## Motivation
@@ -439,7 +439,7 @@ You are {{=$age}} and still don't have a name?
 })
 ```
 
-You can also use the default [@topoconfig/cmds](https://github.com/antongolub/misc/tree/master/packages/topoconfig/cmds) preset as a shortcut or create your own. No limitations.
+You can also use the default [@topoconfig/cmds](https://github.com/idleware/misc/tree/master/packages/topoconfig/cmds) preset as a shortcut or create your own. No limitations.
 ```ts
 import {topoconfig} from 'topoconfig'
 import * as cmds from '@topoconfig/cmds'
@@ -458,7 +458,7 @@ const config = await topoconfig<ReturnType<typeof cmds.conf>>({
     schema: 'file schema.json > json',
 
     // and finally wrap the result with Conf API
-    // https://github.com/antongolub/misc/tree/master/packages/topoconfig/cmds#conf
+    // https://github.com/idleware/misc/tree/master/packages/topoconfig/cmds#conf
     output: 'conf $config $schema',
   }
 })
@@ -505,7 +505,7 @@ The first queued cmd operates only with explicitly declared params:
 ## Next steps
 * Add ternaries: `cmd ? cmd1 > cmd2 ... : cmd`
 * Handle _or_ statement: `cmd > cmd || cmd > cmd`
-* 🚧 Provide commands presets: `import {cmds} from 'topoconfig/cmds'` or [@topoconfig/cmds](https://github.com/antongolub/misc/tree/master/packages/topoconfig/cmds)
+* 🚧 Provide commands presets: `import {cmds} from 'topoconfig/cmds'` or [@topoconfig/cmds](https://github.com/idleware/misc/tree/master/packages/topoconfig/cmds)
 * Provide lazy-loading for cmds:
 ```js
 {

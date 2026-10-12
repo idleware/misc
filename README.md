@@ -1,9 +1,9 @@
 ## &lt;misc&gt;
 > Experiment on maintaining a multi-project monorepository
 
-[![CI](https://github.com/antongolub/misc/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/antongolub/misc/actions/workflows/ci.yaml)
-[![Maintainability](https://qlty.sh/gh/antongolub/projects/misc/maintainability.svg)](https://qlty.sh/gh/antongolub/projects/misc)
-[![Code Coverage](https://qlty.sh/gh/antongolub/projects/misc/coverage.svg)](https://qlty.sh/gh/antongolub/projects/misc)
+[![CI](https://github.com/idleware/misc/actions/workflows/ci.yaml/badge.svg?branch=master)](https://github.com/idleware/misc/actions/workflows/ci.yaml)
+[![Maintainability](https://qlty.sh/gh/idleware/projects/misc/maintainability.svg)](https://qlty.sh/gh/idleware/projects/misc)
+[![Code Coverage](https://qlty.sh/gh/idleware/projects/misc/coverage.svg)](https://qlty.sh/gh/idleware/projects/misc)
 
 ## Statuses
 

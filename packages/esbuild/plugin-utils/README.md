@@ -1,7 +1,7 @@
 # esbuild-plugin-utils
 > Common utils for esbuild plugins
 
-[![lcov](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fantongolub%2Fmisc%2Freleases%2Fdownload%2Flcov%2Flcov-sum.json&query=%24.scopes.packages_esbuild_plugin_utils.max&label=lcov&color=brightgreen)](https://github.com/antongolub/misc/releases/download/lcov/lcov.info)
+[![lcov](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fidleware%2Fmisc%2Freleases%2Fdownload%2Flcov%2Flcov-sum.json&query=%24.scopes.packages_esbuild_plugin_utils.max&label=lcov&color=brightgreen)](https://github.com/idleware/misc/releases/download/lcov/lcov.info)
 [![npm](https://img.shields.io/npm/v/esbuild-plugin-utils.svg?&color=white)](https://www.npmjs.com/package/esbuild-plugin-utils)
 
 ## Status

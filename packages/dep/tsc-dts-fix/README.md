@@ -1,7 +1,7 @@
 # tsc-dts-fix
 > Applies some fixes to libdefs (d.ts) produced with tsc
 
-[![lcov](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fantongolub%2Fmisc%2Freleases%2Fdownload%2Flcov%2Flcov-sum.json&query=%24.scopes.packages_dep_tsc_dts_fix.max&label=lcov&color=brightgreen)](https://github.com/antongolub/misc/releases/download/lcov/lcov.info)
+[![lcov](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fidleware%2Fmisc%2Freleases%2Fdownload%2Flcov%2Flcov-sum.json&query=%24.scopes.packages_dep_tsc_dts_fix.max&label=lcov&color=brightgreen)](https://github.com/idleware/misc/releases/download/lcov/lcov.info)
 [![npm](https://img.shields.io/npm/v/tsc-dts-fix.svg?&color=white)](https://www.npmjs.com/package/tsc-dts-fix)
 
 ## Problem

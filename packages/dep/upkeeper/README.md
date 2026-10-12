@@ -1,7 +1,7 @@
 # upkeeper
 > Script generator for deps updating
 
-[![lcov](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fantongolub%2Fmisc%2Freleases%2Fdownload%2Flcov%2Flcov-sum.json&query=%24.scopes.packages_dep_upkeeper.max&label=lcov&color=brightgreen)](https://github.com/antongolub/misc/releases/download/lcov/lcov.info)
+[![lcov](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fidleware%2Fmisc%2Freleases%2Fdownload%2Flcov%2Flcov-sum.json&query=%24.scopes.packages_dep_upkeeper.max&label=lcov&color=brightgreen)](https://github.com/idleware/misc/releases/download/lcov/lcov.info)
 [![npm](https://img.shields.io/npm/v/upkeeper.svg?&color=white)](https://www.npmjs.com/package/upkeeper)
 
 ## Status
@@ -75,7 +75,7 @@ sh patches/upkeeper.sh
 set -e
 
 echo pre
-echo $'diff --git a/packages/blank/package.json b/packages/blank/package.json\n--- a/packages/blank/package.json\n+++ b/packages/blank/package.json\n@@ -46,6 +46,6 @@\n   "homepage": "https://github.com/antongolub/misc#readme",\n   "devDependencies": {\n     "@antongolub/infra": "workspace:*",\n-    "@types/node": "^20.10.3"\n+    "@types/node": "^20.10.4"\n   }\n }\n' | git apply --whitespace=fix --inaccurate-eof
+echo $'diff --git a/packages/blank/package.json b/packages/blank/package.json\n--- a/packages/blank/package.json\n+++ b/packages/blank/package.json\n@@ -46,6 +46,6 @@\n   "homepage": "https://github.com/idleware/misc#readme",\n   "devDependencies": {\n     "@antongolub/infra": "workspace:*",\n-    "@types/node": "^20.10.3"\n+    "@types/node": "^20.10.4"\n   }\n }\n' | git apply --whitespace=fix --inaccurate-eof
 echo post
 
 echo pre
