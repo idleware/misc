@@ -7,10 +7,11 @@ import * as fs from 'node:fs'
 import path from 'node:path'
 import * as os from 'node:os'
 
+const tempy = () => fs.mkdtempSync(path.join(os.tmpdir(), 'tempy-'))
+
 describe('integration', () => {
   it('applies everything at once', async () => {
     const __dirname = url.fileURLToPath(new URL('.', import.meta.url))
-    const tempy = () => fs.mkdtempSync(path.join(os.tmpdir(), 'tempy-'))
 
     const temp = tempy()
     await fs.promises.writeFile(path.resolve(temp, 'config.json'), '{"foo": "bar", "extends": "./base.json"}', 'utf8')
